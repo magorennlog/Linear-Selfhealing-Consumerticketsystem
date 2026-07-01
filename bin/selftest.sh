@@ -99,7 +99,39 @@ assert_exit 0 "guardrail: dieselben 13 mit max 20 → PASS" -- run_gc 20
 # BLOCK: leerer Branch (kein Diff gegen base)
 ( cd "$REPO"; git checkout -q "$BASE"; git checkout -q -b feat-empty )
 assert_exit 2 "guardrail: leerer Branch → BLOCK" -- run_gc 12
-rm -rf "$REPO" "$DENY"
+
+echo "→ secret-scan.sh"
+SC="$SDS/bin/secret-scan.sh"
+SENV="$(mktemp)"
+printf '%s\n' '# test-env' 'SDS_LINEAR_API_KEY=realkey_abcdef123456' > "$SENV"
+run_sc(){ ( cd "$REPO" && SDS_ENV_FILE="$SENV" bash "$SC" "$BASE" ) ; }
+
+# PASS: harmloser Diff
+( cd "$REPO"; git checkout -q "$BASE"; git checkout -q -b sc-ok
+  echo 'const x = 1;' > src/ok.js; git add -A; git commit -qm ok )
+assert_exit 0 "secret-scan: harmlose Änderung → PASS" -- run_sc
+
+# BLOCK: AWS-Key im Code
+( cd "$REPO"; git checkout -q "$BASE"; git checkout -q -b sc-aws
+  echo 'const k = "AKIAABCDEFGHIJKLMNOP";' > src/leak.js; git add -A; git commit -qm leak )
+assert_exit 2 "secret-scan: AWS-Key im Diff → BLOCK" -- run_sc
+
+# BLOCK: key-Zuweisung mit echtem Wert
+( cd "$REPO"; git checkout -q "$BASE"; git checkout -q -b sc-assign
+  echo 'api_key = "supersecretvalue123"' > src/cfg.py; git add -A; git commit -qm assign )
+assert_exit 2 "secret-scan: api_key-Zuweisung → BLOCK" -- run_sc
+
+# BLOCK: echter .sds-env-Wert im Klartext (DAS Injection-Szenario)
+( cd "$REPO"; git checkout -q "$BASE"; git checkout -q -b sc-env
+  echo '// key: realkey_abcdef123456' > src/note.js; git add -A; git commit -qm env )
+assert_exit 2 "secret-scan: .sds-env-Wert im Diff → BLOCK" -- run_sc
+
+# PASS: offensichtlicher Platzhalter blockt nicht
+( cd "$REPO"; git checkout -q "$BASE"; git checkout -q -b sc-ph
+  echo 'key: sk-xxxxxxxxxxxxxxxxxxxxxx' > docs.md; git add -A; git commit -qm ph )
+assert_exit 0 "secret-scan: Platzhalter (xxxx) → PASS" -- run_sc
+
+rm -rf "$REPO" "$DENY" "$SENV"
 
 echo
 echo "Ergebnis: $PASS grün, $FAIL rot."

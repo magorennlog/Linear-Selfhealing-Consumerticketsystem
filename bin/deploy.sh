@@ -26,12 +26,17 @@ DEPLOY_CMD="${4:-}"
 command -v gh >/dev/null || { echo "FEHLER: gh CLI nicht gefunden." >&2; exit 1; }
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "FEHLER: kein Git-Repo (cwd=$PWD)." >&2; exit 1; }
 
-# 1) Defense in depth: dasselbe Pfad-Gate noch einmal, jetzt unmittelbar vor Merge.
+# 1) Defense in depth: BEIDE Gates noch einmal, jetzt unmittelbar vor Merge.
 #    Der PR-Head muss lokal als aktueller Branch ausgecheckt sein (der Skill ist
 #    nach dem Fix auf dem Auto-Branch). Wir pruefen HEAD gegen base.
 echo "→ Guardrail-Recheck vor Deploy …"
 if ! bash "$HERE/guardrail-check.sh" "$BASE" "$MAX_FILES"; then
   echo "ABBRUCH: Guardrail-Gate blockt — kein Auto-Merge, kein Deploy. An Mensch." >&2
+  exit 2
+fi
+echo "→ Secret-Scan-Recheck vor Deploy …"
+if ! bash "$HERE/secret-scan.sh" "$BASE"; then
+  echo "ABBRUCH: Secret-Scan blockt (moegliches Leak/Injection) — kein Auto-Merge, kein Deploy." >&2
   exit 2
 fi
 
