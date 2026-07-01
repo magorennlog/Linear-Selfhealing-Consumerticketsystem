@@ -1,0 +1,40 @@
+# Selfdeveloping System — Secrets & Tracker-IDs
+#
+#   cp .sds-env.example .sds-env  &&  chmod 600 .sds-env
+#   # Werte eintragen. .sds-env ist gitignored — NIEMALS committen.
+#
+# Nur die Variablen des gewählten Adapters müssen gesetzt sein.
+
+# ============== Linear (adapters/linear.sh) ==============
+SDS_LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxx
+SDS_LINEAR_TEAM_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# Workflow-State, in dem gepollt wird (UUID). Finden: Linear → Settings → API,
+# oder GraphQL `query { workflowStates { nodes { id name } } }`.
+SDS_LINEAR_POLL_STATE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# State, in den ein Ticket nach PR wandert (z. B. "In Review").
+SDS_LINEAR_REVIEW_STATE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# State für die manuelle Freigabe-Warteschlange (Council < Schwelle), z. B. "Needs Approval".
+SDS_LINEAR_MANUAL_QUEUE_STATE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# State nach erfolgreichem Auto-Deploy, z. B. "Done" / "Deployed".
+SDS_LINEAR_DEPLOYED_STATE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# Komma-separiert = ODER. Für dieses Tool typisch "bug,feature".
+SDS_LINEAR_REQUIRED_LABEL=bug,feature
+# Optional: nur Tickets, die ZUSÄTZLICH dieses Label tragen (sicherste Variante).
+SDS_LINEAR_OPT_IN_LABEL=
+
+# ============== GitHub Issues (adapters/github.sh) ==============
+# Auth über `gh auth login` (kein Token hier nötig). Nur das Ziel-Repo angeben:
+SDS_GITHUB_REPO=owner/repo
+# Komma-separiert = ODER. Für dieses Tool typisch "bug,feature".
+SDS_GITHUB_REQUIRED_LABEL=bug,feature
+SDS_GITHUB_OPT_IN_LABEL=
+# "move" setzt dieses Label (GitHub hat keine Workflow-States):
+SDS_GITHUB_REVIEW_LABEL=in-review
+# Label für die manuelle Freigabe-Warteschlange (Council < Schwelle):
+SDS_GITHUB_MANUAL_QUEUE_LABEL=needs-approval
+# Label nach erfolgreichem Auto-Deploy:
+SDS_GITHUB_DEPLOYED_LABEL=deployed
+
+# ============== Optionaler Eskalations-Kanal ==============
+# Webhook (Slack/Telegram/Discord), an den "braucht Mensch"-Meldungen gehen.
+SDS_ESCALATION_WEBHOOK=

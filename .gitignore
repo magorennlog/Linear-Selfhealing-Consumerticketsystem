@@ -1,0 +1,11 @@
+# Secrets & lokale Konfiguration — NIEMALS committen
+.sds-env
+config.yml
+guardrails.deny
+
+# Laufzeit-State (bearbeitete Tickets)
+.sds-state/
+
+# OS / Editor
+.DS_Store
+*.swp

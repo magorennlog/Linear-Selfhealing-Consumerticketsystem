@@ -1,0 +1,43 @@
+# guardrails.deny — verbotene Pfade (DETERMINISTISCHES Gate)
+#
+# Eine Glob-Regel pro Zeile. '#' = Kommentar. Berührt das Diff eines Auto-Fixes
+# EINE dieser Regeln, blockt `bin/guardrail-check.sh` den PR — der Agent verwirft
+# den Branch und eskaliert an einen Menschen. Das ist die unumgehbare Grenze.
+#
+# Glob-Syntax (gitignore-artig):
+#   *      beliebige Zeichen innerhalb eines Pfadsegments
+#   **     beliebige Verzeichnistiefe
+#   name   nackter Name matcht auf jeder Ebene
+#
+# → guardrails.deny.example nach guardrails.deny kopieren und auf DEIN Projekt
+#   anpassen. Im Zweifel großzügig sperren — was hier steht, ändert nie ein Bot.
+
+# --- Datenbank / Schema / Migrationen ---
+**/schema.prisma
+**/migrations/**
+**/*.sql
+
+# --- Auth / Sicherheit / Secrets ---
+**/auth/**
+**/middleware.*
+**/*session*
+**/*password*
+.env*
+**/secrets/**
+
+# --- Geschäftslogik mit Rechts-/Compliance-Bezug ---
+**/business-rules.*
+**/billing/**
+**/payment*/**
+
+# --- Infrastruktur / Deployment ---
+**/Dockerfile*
+**/docker-compose*.yml
+**/*.tf
+deploy*.sh
+.github/workflows/**
+
+# --- Abhängigkeiten / Build (kein autonomes Bump) ---
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

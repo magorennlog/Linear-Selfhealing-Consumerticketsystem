@@ -1,0 +1,130 @@
+# Selfdeveloping System — Verhaltens-Config (KEINE Secrets; die liegen in .sds-env)
+#
+# Kopiere diese Datei nach config.yml und passe sie an. Der Skill liest config.yml
+# zu Beginn jedes Zyklus. config.yml ist gitignored, damit projektspezifische
+# Werte nicht ins veröffentlichte Skill-Repo geraten — committe sie aber sehr wohl
+# in DEIN Projekt-Repo, wenn der Skill dort als .claude/skills/… lebt.
+
+tracker:
+  # Welcher Adapter aus adapters/ den Tracker bedient: linear | github | <eigener>
+  adapter: linear
+  # Verb-Aufruf, das der Skill nutzt (relativ zum Skill-Verzeichnis).
+  cmd: "adapters/linear.sh"
+  # Status, in den ein Ticket nach erfolgreichem PR wandert.
+  #   Linear: Workflow-State-UUID  ·  GitHub: Label-Name (z. B. "in-review")
+  review_state: ""          # leer = SDS_LINEAR_REVIEW_STATE_ID / SDS_GITHUB_REVIEW_LABEL aus .sds-env nutzen
+  # Eligibility steuert der Adapter über .sds-env (required_label / opt_in_label /
+  # poll_state). Siehe .sds-env.example.
+
+repo:
+  base_branch: master       # Branch, gegen den gefixt + PR geöffnet wird (= dein Live/Default-Branch)
+  branch_prefix: "auto/"    # Auto-Branches: auto/<ID>-<slug>
+  remote: origin
+  pr_base: master           # Basis des PR (i. d. R. = base_branch)
+
+verify:
+  # MUSS grün sein, sonst KEIN PR. Mehrere Befehle = alle müssen passen.
+  commands:
+    - "npm run test"
+  # Optional zusätzliche Gates:
+  # - "npm run lint"
+  # - "npm run build"
+
+council:
+  # Gremium-Review (STORM/LLM-Council-Prinzip): mehrere Linsen bewerten jeden
+  # Report VOR dem Fix (Klassifikation) und das Diff NACH dem Fix (Verifikation).
+  # Die Schwellen-Entscheidung trifft bin/council-decide.sh DETERMINISTISCH aus
+  # den JSON-Urteilen — der Agent liefert Zahlen, umgeht die Logik aber nicht.
+  enabled: true
+  # Linsen, die jeden Report unabhängig bewerten (siehe templates/council-rubric.md).
+  members:
+    - reproducer        # Soll/Ist klar? reproduzierbar?
+    - scope-skeptic     # echter Bug / eng umrissenes Feature — oder getarntes Großprojekt?
+    - security-warden   # berührt es forbidden_keywords / Compliance? → eskalieren
+    - product-judge     # bei Features: wohldefiniert, klein, ohne Produktentscheidung?
+  # Mindest-Confidence (0–100), ab der das Council eine Achse als „sicher" wertet.
+  # Gilt für BEIDE Achsen: „ist ein echter Bug/Feature" UND „der Fix löst es".
+  confidence_threshold: 75
+  # Kein Einzelvotum darf unter diesen Boden fallen (sonst → manuelle Warteschlange).
+  floor: 50
+  # Wohin die JSON-Urteile geschrieben werden (Audit-Spur, pro Ticket ein Ordner).
+  verdict_dir: ".sds-state/council"
+
+deploy:
+  # MASTER-SCHALTER. false ⇒ Verhalten wie v0.1: endet IMMER am PR (nie Merge/Deploy).
+  # true ⇒ autonomer Deploy ERLAUBT, aber nur wenn ALLE Tore zugleich passen:
+  #   (1) Council ≥ confidence_threshold auf beiden Achsen
+  #   (2) deterministisches Pfad-Gate PASS (verbotene Pfade haben absolutes Veto)
+  #   (3) Tests grün
+  # Sonst → manuelle Freigabe-Warteschlange (manual_queue_state).
+  enabled: false
+  # Schwelle für die Auto-Deploy-Entscheidung. = council.confidence_threshold,
+  # hier separat überschreibbar (z. B. Deploy konservativer als Klassifikation).
+  confidence_threshold: 75
+  # PR squash-mergen als Teil des Deploys (via bin/deploy.sh).
+  auto_merge: true
+  # Optionaler Deploy-Befehl NACH dem Merge. Leer = deine CI/CD deployt nach
+  # Merge auf base selbst (häufigster Fall). Sonst z. B. "npm run deploy:prod".
+  command: ""
+  # Tracker-Status/Label nach erfolgreichem Auto-Deploy (z. B. "Done"/"deployed").
+  #   Linear: Workflow-State-UUID  ·  GitHub: Label  (leer ⇒ aus .sds-env)
+  deployed_state: ""
+  # Tracker-Status/Label für die manuelle Freigabe-Warteschlange (Fallback unter Schwelle).
+  manual_queue_state: ""
+
+notify:
+  # Nach erfolgreichem Auto-Deploy den Reporter/Ersteller benachrichtigen
+  # ("umgesetzt — bitte testen"), via adapter notify (@mention im Tracker).
+  reporter_on_deploy: true
+  template: "templates/reporter-notification.md"
+
+guardrails:
+  # Pfad-Deny-Liste (deterministisch, von bin/guardrail-check.sh geprüft).
+  deny_paths_file: "guardrails.deny"
+  # Maximale Dateizahl pro Fix — mehr ⇒ kein "minimaler Fix" ⇒ BLOCK + eskalieren.
+  max_files_changed: 12
+  # Schlüsselwörter im TICKET-Text, bei denen der Agent gar nicht erst anfängt,
+  # sondern sofort eskaliert (Klassifikations-Stufe, vor jedem Code).
+  forbidden_keywords:
+    - schema
+    - migration
+    - "ALTER TABLE"
+    - auth
+    - login
+    - passwort
+    - password
+    - security
+    - DSGVO
+    - GDPR
+    - löschen
+    - delete
+    - bezahl
+    - payment
+  # Nie mehr als so viele offene Auto-PRs gleichzeitig (Backpressure).
+  max_open_auto_prs: 3
+  # Nur Tickets mit Opt-in-Label anfassen? Sicherste Variante. Setzen via
+  # SDS_*_OPT_IN_LABEL in .sds-env (z. B. "auto-ok"). Leer = Blocklist-Modus.
+
+output:
+  comment_language: de      # Sprache der Ticket-Kommentare
+  bot_marker: "🤖"          # Prefix, das einen Bot-Kommentar kennzeichnet
+  state_file: ".sds-state/processed.txt"   # bearbeitete Tickets (Idempotenz)
+  # Vorlagen für PR-Body und Ticket-Kommentar (Platzhalter siehe templates/).
+  pr_body_template: "templates/pr-body.md"
+  comment_template: "templates/ticket-comment.md"
+
+policy:
+  # HARTE INVARIANTEN — der Skill ignoriert hier abweichende Werte.
+  # Dokumentiert die Grenzen; ändern hat KEINE Wirkung (im Playbook festgezurrt).
+  never_push_base: true         # committet nie direkt auf base_branch (immer Branch + PR)
+  one_ticket_per_cycle: true
+  one_attempt_per_cycle: true   # bei Fehlschlag: eskalieren, kein Retry-Spinning
+  guardrail_has_veto: true      # das Pfad-Gate blockt Auto-Deploy IMMER, auch bei 100% Confidence
+  # Hinweis: never_merge/never_deploy sind ab v0.2 KEINE Invarianten mehr, sondern
+  # über deploy.enabled steuerbar — aber nur unter den drei Toren oben (Council +
+  # Pfad-Gate + Tests). deploy.enabled:false stellt das v0.1-Verhalten wieder her.
+
+mode:
+  # plan_only: true ⇒ Dry-Run. Klassifiziert + postet einen PLAN als Ticket-
+  # Kommentar, schreibt aber KEINEN Code und öffnet KEINEN PR. Zum Vertrauensaufbau.
+  plan_only: false
