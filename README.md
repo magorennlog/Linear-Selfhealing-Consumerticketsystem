@@ -159,18 +159,30 @@ Getaktet betreiben — zwei Wege:
   geschützte Daten oft **nicht** erwünscht; bewusst entscheiden.
 
 Jeder Zyklus tut höchstens eine Sache und meldet eine Zeile:
-`<id> → fix-PR <url>` · `skipped (<grund>)` · `blocked (<bereich>)` · `nichts zu tun`.
+`<id> → deployed <url>` · `queued <url>` · `skipped (<grund>)` · `blocked (<bereich>)` ·
+`rejected (council)` · `nichts zu tun`.
 
 ---
 
-## Eigenen Tracker anbinden
+## Tracker anbinden — Linear, GitHub, Supabase oder eigener
 
-Ein Adapter ist ein Skript mit **vier Verben** (`poll`/`get`/`comment`/`move`) —
-siehe [`adapters/CONTRACT.md`](adapters/CONTRACT.md). Kopiere `adapters/linear.sh`
-als Vorlage, ersetze die API-Aufrufe, halte das Ausgabeformat ein
-(`id<TAB>ref<TAB>title`), trage `tracker.cmd` in `config.yml` ein — fertig. Die
-Zyklus-Logik bleibt unberührt. Jira, GitLab, Redmine usw. sind so in einer Datei
-machbar.
+Ein Adapter ist ein Skript mit **fünf Verben** (`poll`/`get`/`comment`/`move`/`notify`) —
+siehe [`adapters/CONTRACT.md`](adapters/CONTRACT.md). Mitgeliefert:
+
+- **`linear.sh`** / **`github.sh`** — für Teams, die schon in Linear bzw.
+  GitHub Issues arbeiten (Reporter sind Entwickler/Interne).
+- **`supabase.sh`** — der **Consumer-Eingang**: Endnutzer melden über ein simples
+  Formular ([`examples/report-form.html`](examples/report-form.html)) in eine
+  zentrale Supabase-Tabelle, **projektübergreifend** (eine DB, `project`-Spalte,
+  eine Skill-Instanz pro Projekt). Schema + RLS:
+  [`examples/supabase-schema.sql`](examples/supabase-schema.sql), Setup in 15 min:
+  [`examples/supabase-consumer.md`](examples/supabase-consumer.md).
+  ⚠️ Für anonyme Reporter gilt: `deploy.enabled: false` oder Opt-in-Label —
+  siehe Prompt-Injection-Abschnitt.
+
+Eigener Tracker (Jira, GitLab, Redmine …): `adapters/linear.sh` als Vorlage
+kopieren, API-Aufrufe ersetzen, Ausgabeformat einhalten (`id<TAB>ref<TAB>title`),
+`tracker.cmd` in `config.yml` eintragen — die Zyklus-Logik bleibt unberührt.
 
 ---
 

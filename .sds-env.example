@@ -35,6 +35,25 @@ SDS_GITHUB_MANUAL_QUEUE_LABEL=needs-approval
 # Label nach erfolgreichem Auto-Deploy:
 SDS_GITHUB_DEPLOYED_LABEL=deployed
 
+# ============== Supabase (adapters/supabase.sh) ==============
+# Consumer-Eingang: Endnutzer melden über examples/report-form.html in eine
+# zentrale Tabelle — projektübergreifend (eine DB, project-Spalte pro Instanz).
+# Schema: examples/supabase-schema.sql · Setup: examples/supabase-consumer.md
+SDS_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+# service_role-Key (Settings → API). NUR hier, NIE ins Formular/Frontend!
+SDS_SUPABASE_SERVICE_KEY=eyJxxxxxxxxxxxxxxxxxxxx
+# Projekt-Slug, den DIESE Skill-Instanz bedient (a-z, 0-9, Bindestrich):
+SDS_SUPABASE_PROJECT=mein-projekt
+SDS_SUPABASE_POLL_STATUS=open
+SDS_SUPABASE_REVIEW_STATUS=in-review
+SDS_SUPABASE_MANUAL_QUEUE_STATUS=needs-approval
+SDS_SUPABASE_DEPLOYED_STATUS=deployed
+# Optional (leer = alle Tickets des Projekts; Consumer setzen keine Labels):
+SDS_SUPABASE_REQUIRED_LABEL=
+SDS_SUPABASE_OPT_IN_LABEL=
+# Optional: Webhook für E-Mail-Versand an den Reporter (Edge Function / n8n / Make):
+SDS_SUPABASE_NOTIFY_WEBHOOK=
+
 # ============== Optionaler Eskalations-Kanal ==============
 # Webhook (Slack/Telegram/Discord), an den "braucht Mensch"-Meldungen gehen.
 SDS_ESCALATION_WEBHOOK=

@@ -3,6 +3,25 @@
 Alle nennenswerten Änderungen an diesem Skill. Format lose nach
 [Keep a Changelog](https://keepachangelog.com/), Versionierung nach SemVer.
 
+## [0.3.0] — 2026-07-01
+### Hinzugefügt
+- **Supabase-Adapter** (`adapters/supabase.sh`): Consumer-Ticket-Eingang über
+  PostgREST — Endnutzer melden per Formular, projektübergreifend in einer DB
+  (`project`-Spalte, eine Skill-Instanz pro Projekt). Retry-gehärtet wie
+  `linear.sh`; `notify` kommentiert immer und kann zusätzlich einen
+  E-Mail-Webhook (`SDS_SUPABASE_NOTIFY_WEBHOOK`) auslösen.
+- **`examples/supabase-schema.sql`** — Tabellen `sds_tickets`/`sds_comments` mit
+  Checks + RLS: der öffentliche anon-Key darf ausschließlich Tickets einfügen.
+- **`examples/report-form.html`** — self-contained Consumer-Formular
+  (Bug/Feature, optionale Reporter-E-Mail, Honeypot-Spamschutz).
+- **`examples/supabase-consumer.md`** — 15-Minuten-Setup, Benachrichtigungs-
+  Webhook, Policy für anonyme Reporter (kein Auto-Deploy ohne Opt-in),
+  projektübergreifende Auswertung per SQL.
+
+### Geändert
+- README: Adapter-Sektion auf fünf Verben + drei mitgelieferte Adapter
+  aktualisiert; Zyklus-Ausgänge (`deployed`/`queued`/`rejected`) nachgezogen.
+
 ## [0.2.1] — 2026-07-01
 ### Hinzugefügt
 - **`bin/secret-scan.sh`** — drittes deterministisches Gate gegen Prompt-Injection:

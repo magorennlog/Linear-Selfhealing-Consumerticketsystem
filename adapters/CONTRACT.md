@@ -59,6 +59,9 @@ Die De-Duplizierung gegen bereits bearbeitete Tickets (`state_file`) macht der
 
 - **`linear.sh`** — Linear (GraphQL). Referenz-Implementierung.
 - **`github.sh`** — GitHub Issues (via `gh` CLI).
+- **`supabase.sh`** — Supabase/PostgREST: Consumer-Reports über ein eigenes
+  Formular in eine zentrale Tabelle, projektübergreifend (`project`-Spalte).
+  Schema + RLS: `examples/supabase-schema.sql`, Setup: `examples/supabase-consumer.md`.
 
 Ein neuer Adapter ist fertig, wenn `poll`, `get`, `comment`, `move`, `notify` dem
 obigen Vertrag folgen. Smoke-Test: `./adapters/<name>.sh poll` liefert Zeilen oder

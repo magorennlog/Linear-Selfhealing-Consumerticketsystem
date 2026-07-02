@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  Selfdeveloping System — minimales Consumer-Report-Formular.
+
+  Einbauen: die drei CONFIG-Werte unten setzen, Datei irgendwo hosten (oder in
+  deine App einbetten). Nutzt den PUBLIC anon-Key — der darf dank RLS
+  (examples/supabase-schema.sql) ausschließlich Tickets EINFÜGEN, nichts lesen.
+  Den service_role-Key hier NIEMALS verwenden.
+-->
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Problem melden / Wunsch äußern</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 16px/1.5 -apple-system, system-ui, sans-serif; max-width: 560px;
+           margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.4rem; }
+    label { display: block; margin: 1rem 0 .25rem; font-weight: 600; }
+    input, textarea, select { width: 100%; box-sizing: border-box; padding: .6rem;
+           border: 1px solid #8886; border-radius: 8px; font: inherit; }
+    textarea { min-height: 8rem; resize: vertical; }
+    button { margin-top: 1.25rem; padding: .7rem 1.4rem; border: 0; border-radius: 8px;
+           background: #2563eb; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .hint { color: #888; font-size: .85rem; margin-top: .25rem; }
+    .msg { margin-top: 1rem; padding: .75rem 1rem; border-radius: 8px; display: none; }
+    .msg.ok  { display: block; background: #16a34a22; }
+    .msg.err { display: block; background: #dc262622; }
+    .hp { position: absolute; left: -9999px; }  /* Honeypot gegen Spam-Bots */
+  </style>
+</head>
+<body>
+  <h1>Problem melden / Wunsch äußern</h1>
+  <p class="hint">Beschreibe möglichst konkret: Was hast du getan, was hast du
+     erwartet, was ist stattdessen passiert?</p>
+
+  <form id="f">
+    <label for="type">Art</label>
+    <select id="type">
+      <option value="bug">🐞 Etwas funktioniert nicht (Bug)</option>
+      <option value="feature">💡 Wunsch / Verbesserung (Feature)</option>
+    </select>
+
+    <label for="title">Kurztitel *</label>
+    <input id="title" required minlength="3" maxlength="200"
+           placeholder="z. B. Export-Button reagiert nicht">
+
+    <label for="desc">Beschreibung *</label>
+    <textarea id="desc" required maxlength="10000"
+      placeholder="Schritte zum Nachstellen, erwartetes vs. tatsächliches Verhalten …"></textarea>
+
+    <label for="name">Dein Name (optional)</label>
+    <input id="name" maxlength="120" autocomplete="name">
+
+    <label for="email">E-Mail für Rückmeldung (optional)</label>
+    <input id="email" type="email" autocomplete="email">
+    <p class="hint">Wenn deine Meldung umgesetzt ist, sagen wir dir Bescheid.</p>
+
+    <input class="hp" id="website" tabindex="-1" autocomplete="off">
+
+    <button id="btn" type="submit">Absenden</button>
+    <div id="msg" class="msg"></div>
+  </form>
+
+  <script>
+    // ---------- CONFIG (anpassen) ----------
+    const SUPABASE_URL = "https://XXXX.supabase.co";
+    const SUPABASE_ANON_KEY = "<public-anon-key>";   // public; darf per RLS nur INSERTen
+    const PROJECT = "mein-projekt";                  // = SDS_SUPABASE_PROJECT der Skill-Instanz
+    // ---------------------------------------
+
+    const $ = id => document.getElementById(id);
+    $("f").addEventListener("submit", async e => {
+      e.preventDefault();
+      if ($("website").value) return;                // Honeypot gefüllt → Bot, still verwerfen
+      const btn = $("btn"), msg = $("msg");
+      btn.disabled = true; msg.className = "msg";
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/sds_tickets`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({
+            project: PROJECT,
+            type: $("type").value,
+            title: $("title").value.trim(),
+            description: $("desc").value.trim(),
+            reporter_name: $("name").value.trim() || null,
+            reporter_email: $("email").value.trim() || null,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        msg.textContent = "Danke! Deine Meldung ist eingegangen — wir melden uns, sobald sie umgesetzt ist.";
+        msg.className = "msg ok";
+        $("f").reset();
+      } catch (err) {
+        msg.textContent = "Senden fehlgeschlagen — bitte später erneut versuchen.";
+        msg.className = "msg err";
+        console.error(err);
+      } finally { btn.disabled = false; }
+    });
+  </script>
+</body>
+</html>
