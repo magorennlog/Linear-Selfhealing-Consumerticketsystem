@@ -66,6 +66,22 @@ strukturierte JSON-Urteile. Die **Schwellen-Entscheidung** trifft danach
 `bin/council-decide.sh` deterministisch — der Agent liefert Confidence-Zahlen,
 umgeht die Logik aber nicht.
 
+Das dritte Stück ist der **Feedback-Loop zum Reporter** (v0.4.0): **jede Meldung
+bekommt eine verständliche Antwort**, nicht nur die deployten —
+
+| Ausgang | Nachricht an den Reporter |
+|---|---|
+| umgesetzt & live | „Umgesetzt — bitte einmal gegenprüfen" |
+| Fix in Warteschlange | „Korrektur fertig, wartet auf menschliche Freigabe" |
+| kein Fehler | „Kein Bug — so funktioniert es: …" (mit kurzer Anleitung) |
+| zu vage | „Dazu brauchen wir noch Infos: …" (konkrete Rückfragen) |
+| Feature-Wunsch | „Guter Vorschlag — steht auf der Entwicklungsliste" |
+| eskaliert | „Ein Mensch aus dem Team schaut es sich an" (bewusst neutral) |
+
+Über `notify.channel_cmd` lässt sich das zusätzlich in einen eigenen Kanal
+spiegeln (In-App-Glocke, E-Mail, Push) — für Reporter **ohne** Tracker-Zugang.
+Das Kommando bekommt ein JSON-Objekt auf stdin; Kontrakt in `config.example.yml`.
+
 ---
 
 ## Installation

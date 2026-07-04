@@ -77,6 +77,21 @@ notify:
   # ("umgesetzt — bitte testen"), via adapter notify (@mention im Tracker).
   reporter_on_deploy: true
   template: "templates/reporter-notification.md"
+  # Reporter bekommt bei JEDEM Ausgang eine verständliche Nachricht — nicht nur
+  # bei Deploy: kein-Bug (mit Erklärung), Rückfrage, Feature-notiert,
+  # Fix-in-Warteschlange, eskaliert. Vorlagen: <outcome_templates_dir>/<outcome>.md
+  reporter_on_outcome: true
+  outcome_templates_dir: "templates/outcomes"
+  # Optionaler Out-of-band-Kanal ZUSÄTZLICH zum Tracker-Kommentar (In-App-Glocke,
+  # E-Mail, Push …) — für Reporter OHNE Tracker-Zugang. Das Kommando wird mit
+  # cwd=<Projekt-Repo> und gesetzter Umgebungsvariable SDS ausgeführt und bekommt
+  # EIN JSON-Objekt auf stdin:
+  #   {"id","ref","outcome","type","title","reporter_name","reporter_email",
+  #    "message","pr_url"}
+  # outcome ∈ deployed|fix-queued|not-a-bug|needs-info|feature-queued|escalated.
+  # reporter_* sind best-effort (leer, wenn unbekannt). Ein Fehler des Kommandos
+  # bricht den Zyklus NICHT ab (nur Warnung). Leer = aus.
+  channel_cmd: ""
 
 guardrails:
   # Pfad-Deny-Liste (deterministisch, von bin/guardrail-check.sh geprüft).

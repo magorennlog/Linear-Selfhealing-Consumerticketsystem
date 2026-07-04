@@ -3,6 +3,19 @@
 Alle nennenswerten Änderungen an diesem Skill. Format lose nach
 [Keep a Changelog](https://keepachangelog.com/), Versionierung nach SemVer.
 
+## [0.4.0] — 2026-07-04
+### Hinzugefügt
+- **Reporter-Feedback für JEDEN Ausgang** (`notify.reporter_on_outcome`):
+  Outcome-Vorlagen unter `templates/outcomes/` — `not-a-bug` (mit Erklärung),
+  `needs-info` (konkrete Rückfragen), `feature-queued` (Entwicklungsliste),
+  `fix-queued` (manuelle Warteschlange), `escalated` (bewusst neutral, keine
+  Sicherheitsdetails). SKILL.md sendet an jedem Exit-Punkt die passende Nachricht.
+- **`notify.channel_cmd`** — optionaler Out-of-band-Kanal zusätzlich zum
+  Tracker-Kommentar (In-App-Glocke, E-Mail, Push) für Reporter ohne
+  Tracker-Zugang: Kommando erhält ein JSON-Objekt auf stdin
+  (id/ref/outcome/type/title/reporter_*/message/pr_url), läuft mit cwd=Projekt-
+  Repo und env `SDS`; Fehler brechen den Zyklus nicht ab.
+
 ## [0.3.0] — 2026-07-01
 ### Hinzugefügt
 - **Supabase-Adapter** (`adapters/supabase.sh`): Consumer-Ticket-Eingang über
