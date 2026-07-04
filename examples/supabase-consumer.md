@@ -40,9 +40,13 @@ Endnutzer → report-form.html (anon-Key, RLS: nur INSERT)
 ## Reporter-Benachrichtigung („umgesetzt — bitte testen")
 
 `notify` schreibt immer einen Kommentar an das Ticket (Audit-Spur). Für echte
-**E-Mails** an den Reporter: `SDS_SUPABASE_NOTIFY_WEBHOOK` auf einen Endpunkt
-zeigen lassen, der Mails verschickt — z. B. eine Supabase Edge Function mit
-Resend/Postmark, oder n8n/Make. Der Webhook bekommt:
+**E-Mails** an den Reporter liegt eine fertige Vorlage bei:
+**`examples/notify-edge-function.ts`** — Supabase Edge Function, verschickt via
+Resend (100 Mails/Tag frei), abgesichert über ein Shared Secret
+(`SDS_SUPABASE_NOTIFY_SECRET` → `x-sds-secret`-Header), damit niemand die
+öffentliche URL als Spam-Kanone missbraucht. Deploy-Anleitung steht im
+Datei-Kopf. Alternativ tut es jeder Endpunkt (n8n/Make/eigener Server), der
+diesen Payload versteht:
 
 ```json
 { "email": "...", "name": "...", "ticket_id": 42, "project": "shop", "text": "<fertige Nachricht>" }

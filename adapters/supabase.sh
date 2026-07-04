@@ -116,6 +116,8 @@ print(n.get("reporter_name") or n.get("reporter_email") or "")')
     payload=$(python3 -c 'import json,sys; print(json.dumps({"ticket_id":int(sys.argv[1]),"body":sys.argv[2],"author":"bot-notify"}))' "$ref" "$body")
     res=$(send POST "$API/$COMMENTS" "$payload" | ok_row)
     # Optionaler E-Mail-Kanal: Webhook bekommt alles, was er zum Versand braucht.
+    # Shared Secret (x-sds-secret) schützt die öffentliche Function-URL vor Missbrauch
+    # — siehe examples/notify-edge-function.ts.
     if [ -n "${SDS_SUPABASE_NOTIFY_WEBHOOK:-}" ]; then
       hook=$(printf '%s' "$info" | python3 -c '
 import json,sys,os
@@ -123,7 +125,9 @@ d=json.load(sys.stdin); n=(d[0] if isinstance(d,list) and d else {})
 print(json.dumps({"email":n.get("reporter_email"),"name":n.get("reporter_name"),
                   "ticket_id":int(sys.argv[1]),"project":os.environ["SDS_SUPABASE_PROJECT"],
                   "text":sys.argv[2]}))' "$ref" "$body")
-      curl -s --max-time 20 -X POST -H "Content-Type: application/json" -d "$hook" "$SDS_SUPABASE_NOTIFY_WEBHOOK" >/dev/null 2>&1 \
+      curl -s --max-time 20 -X POST -H "Content-Type: application/json" \
+        ${SDS_SUPABASE_NOTIFY_SECRET:+-H "x-sds-secret: $SDS_SUPABASE_NOTIFY_SECRET"} \
+        -d "$hook" "$SDS_SUPABASE_NOTIFY_WEBHOOK" >/dev/null 2>&1 \
         || echo "WARNUNG: Notify-Webhook nicht erreichbar (Kommentar wurde gesetzt)." >&2
     fi
     echo "$res"

@@ -133,6 +133,22 @@ assert_exit 0 "secret-scan: Platzhalter (xxxx) → PASS" -- run_sc
 
 rm -rf "$REPO" "$DENY" "$SENV"
 
+echo "→ report.sh"
+RP="$SDS/bin/report.sh"
+RD="$(mktemp -d)"; mkdir -p "$RD/council/T-1"
+printf '%s\n' \
+  'T-1 deployed:https://example/pr/1 2026-07-01T00:00:00Z' \
+  'T-2 queued:https://example/pr/2 2026-07-01T00:00:00Z' \
+  'T-3 skipped:vage 2026-07-01T00:00:00Z' \
+  'T-4 blocked:guardrail 2026-07-01T00:00:00Z' > "$RD/state.txt"
+printf '%s' '{"member":"a","phase":"classify","is_valid":true,"type":"bug","confidence":80,"rationale":"x"}' > "$RD/council/T-1/classify-a.json"
+printf '%s' '{"member":"a","phase":"verify","fix_resolves":true,"confidence":90,"rationale":"x"}' > "$RD/council/T-1/verify-a.json"
+out=$(bash "$RP" "$RD/state.txt" "$RD/council" 2>&1)
+echo "$out" | grep -q "Zyklen mit Ergebnis: 4" && ok "report: zählt 4 Zyklen" || bad "report: Zyklenzahl falsch"
+echo "$out" | grep -q "Fix-Quote.*50%" && ok "report: Fix-Quote 50%" || bad "report: Fix-Quote falsch"
+echo "$out" | grep -q "Klassifikation: Ø 80%" && ok "report: Council-Ø korrekt" || bad "report: Council-Ø falsch"
+rm -rf "$RD"
+
 echo
 echo "Ergebnis: $PASS grün, $FAIL rot."
 [ "$FAIL" = 0 ] && { echo "✅ alle Gates verhalten sich wie spezifiziert."; exit 0; } || { echo "❌ mindestens ein Gate weicht ab."; exit 1; }

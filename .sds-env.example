@@ -51,8 +51,31 @@ SDS_SUPABASE_DEPLOYED_STATUS=deployed
 # Optional (leer = alle Tickets des Projekts; Consumer setzen keine Labels):
 SDS_SUPABASE_REQUIRED_LABEL=
 SDS_SUPABASE_OPT_IN_LABEL=
-# Optional: Webhook für E-Mail-Versand an den Reporter (Edge Function / n8n / Make):
+# Optional: Webhook für E-Mail-Versand an den Reporter (Edge Function / n8n / Make).
+# Fertige Vorlage: examples/notify-edge-function.ts (Supabase Edge Function + Resend).
 SDS_SUPABASE_NOTIFY_WEBHOOK=
+# Shared Secret für den Webhook (x-sds-secret-Header) — schützt vor Spam-Missbrauch:
+SDS_SUPABASE_NOTIFY_SECRET=
+
+# ============== GitLab (adapters/gitlab.sh) ==============
+SDS_GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+SDS_GITLAB_PROJECT=gruppe/repo
+# Self-hosted? URL anpassen (Default: https://gitlab.com):
+SDS_GITLAB_URL=
+SDS_GITLAB_REQUIRED_LABEL=bug,feature
+SDS_GITLAB_OPT_IN_LABEL=
+SDS_GITLAB_REVIEW_LABEL=in-review
+
+# ============== Jira Cloud (adapters/jira.sh) ==============
+SDS_JIRA_URL=https://deine-org.atlassian.net
+SDS_JIRA_EMAIL=du@firma.de
+SDS_JIRA_TOKEN=xxxxxxxxxxxxxxxxxxxx
+SDS_JIRA_PROJECT_KEY=SUP
+SDS_JIRA_POLL_STATUS=To Do
+SDS_JIRA_REQUIRED_LABEL=bug,feature
+SDS_JIRA_OPT_IN_LABEL=
+# Transition-NAME für move ohne Arg (Workflow-abhängig):
+SDS_JIRA_REVIEW_TRANSITION=In Review
 
 # ============== Optionaler Eskalations-Kanal ==============
 # Webhook (Slack/Telegram/Discord), an den "braucht Mensch"-Meldungen gehen.

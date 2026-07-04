@@ -6,7 +6,8 @@
 # in DEIN Projekt-Repo, wenn der Skill dort als .claude/skills/… lebt.
 
 tracker:
-  # Welcher Adapter aus adapters/ den Tracker bedient: linear | github | supabase | <eigener>
+  # Welcher Adapter aus adapters/ den Tracker bedient:
+  #   linear | github | supabase | gitlab | jira | <eigener>
   adapter: linear
   # Verb-Aufruf, das der Skill nutzt (relativ zum Skill-Verzeichnis).
   cmd: "adapters/linear.sh"

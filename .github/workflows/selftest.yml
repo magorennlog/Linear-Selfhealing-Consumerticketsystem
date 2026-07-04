@@ -1,0 +1,16 @@
+# CI: fährt bei jedem Push/PR die Fixture-Tests gegen alle deterministischen
+# Gates (Pfad-Veto, Council-Schwelle, Secret-Scan). Grün = die Sicherheits-
+# Logik greift wie in der README beschrieben.
+name: selftest
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gates testen
+        run: bash bin/selftest.sh

@@ -16,6 +16,24 @@ Alle nennenswerten Änderungen an diesem Skill. Format lose nach
   (id/ref/outcome/type/title/reporter_*/message/pr_url), läuft mit cwd=Projekt-
   Repo und env `SDS`; Fehler brechen den Zyklus nicht ab.
 
+## [0.4.0] — 2026-07-01
+### Hinzugefügt
+- **CI**: GitHub Action fährt `bin/selftest.sh` bei jedem Push/PR; Badge in der
+  README. Repo-Topics für Auffindbarkeit gesetzt.
+- **`bin/report.sh`** — Metriken über die Audit-Spur: Zyklus-Ausgänge, Fix-Quote,
+  Eskalationsgründe, Council-Confidence-Durchschnitte und (via `gh`, best effort)
+  die **Annahme-Quote der queued-PRs** als Kalibrierungs-Signal für die Schwelle.
+- **GitLab-Adapter** (`adapters/gitlab.sh`): REST v4, gitlab.com + self-hosted,
+  `move` = Label.
+- **Jira-Cloud-Adapter** (`adapters/jira.sh`): REST v3 mit ADF-Handling
+  (Beschreibung → Klartext, Kommentare als ADF-Doc), `move` = Workflow-Transition
+  (Name wird zur ID aufgelöst).
+- **`examples/notify-edge-function.ts`** — fertige Supabase Edge Function für den
+  Reporter-E-Mail-Versand via Resend, abgesichert per Shared Secret
+  (`SDS_SUPABASE_NOTIFY_SECRET` → `x-sds-secret`-Header); Adapter sendet den
+  Header mit.
+- 3 neue Selftests für `report.sh` (21 gesamt, alle grün).
+
 ## [0.3.0] — 2026-07-01
 ### Hinzugefügt
 - **Supabase-Adapter** (`adapters/supabase.sh`): Consumer-Ticket-Eingang über

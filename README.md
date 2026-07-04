@@ -1,5 +1,7 @@
 # Selfdeveloping System
 
+[![selftest](https://github.com/magorennlog/Linear-Selfhealing-Consumerticketsystem/actions/workflows/selftest.yml/badge.svg)](https://github.com/magorennlog/Linear-Selfhealing-Consumerticketsystem/actions/workflows/selftest.yml)
+
 > Ein Claude-Code-Skill, der ein Software-Projekt seine **eigenen gemeldeten Bugs
 > UND Feature-Requests abarbeiten lässt** — pollt den Tracker, lässt ein
 > **Council** (Gremium aus mehreren LLM-Linsen) jeden Report prüfen, fixt
@@ -196,9 +198,21 @@ siehe [`adapters/CONTRACT.md`](adapters/CONTRACT.md). Mitgeliefert:
   ⚠️ Für anonyme Reporter gilt: `deploy.enabled: false` oder Opt-in-Label —
   siehe Prompt-Injection-Abschnitt.
 
-Eigener Tracker (Jira, GitLab, Redmine …): `adapters/linear.sh` als Vorlage
+- **`gitlab.sh`** — GitLab Issues (gitlab.com + self-hosted).
+- **`jira.sh`** — Jira Cloud (inkl. ADF-Handling; `move` = Workflow-Transition).
+
+Eigener Tracker (Redmine, YouTrack …): `adapters/linear.sh` als Vorlage
 kopieren, API-Aufrufe ersetzen, Ausgabeformat einhalten (`id<TAB>ref<TAB>title`),
 `tracker.cmd` in `config.yml` eintragen — die Zyklus-Logik bleibt unberührt.
+
+## Auswertung
+
+`bash bin/report.sh` fasst die Audit-Spur zusammen: Zyklus-Ausgänge, Fix-Quote,
+häufigste Eskalationsgründe, durchschnittliche Council-Confidences — und (via
+`gh`, best effort) die **Annahme-Quote der manuell vorgelegten PRs**: wie oft der
+Mensch gemergt vs. abgelehnt hat. Das ist das Kalibrierungs-Signal für deine
+`confidence_threshold`: liegt die Annahme-Quote nahe 100 %, kannst du die
+Schwelle senken; lehnt der Mensch oft ab, gehört sie höher.
 
 ---
 
